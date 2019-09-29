@@ -1,0 +1,12 @@
+{
+  "AppSettings": {
+    "FaceSubscriptionKey": "",
+    "Region": "",
+    "MapsSubscriptionKey": ""
+  },
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet"
+  }
+}

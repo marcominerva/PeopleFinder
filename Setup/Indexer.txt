@@ -1,0 +1,56 @@
+PUT https://<service_name>.search.windows.net/indexers/<indexer_name>?api-version=2019-05-06
+
+Content-Type: application/json
+api-key: <api_key>
+
+{
+   "name":"<indexer_name>",
+   "description":null,
+   "dataSourceName":"<datasource_name>",
+   "skillsetName":"<skillset_name>",
+   "targetIndexName":"<index_name>",
+   "disabled":null,
+   "schedule":null,
+   "parameters":{
+      "batchSize":null,
+      "maxFailedItems":null,
+      "maxFailedItemsPerBatch":null,
+      "base64EncodeKeys":false,
+      "configuration":{
+         "imageAction":"generateNormalizedImages",
+         "dataToExtract":"contentAndMetadata"
+      }
+   },
+   "fieldMappings":[
+      {
+         "sourceFieldName":"metadata_storage_path",
+         "targetFieldName":"metadata_storage_path",
+         "mappingFunction":{
+            "name":"base64Encode",
+            "parameters":null
+         }
+      },
+      {
+         "sourceFieldName":"metadata_storage_path",
+         "targetFieldName":"uri",
+         "mappingFunction":null
+      }
+   ],
+   "outputFieldMappings":[      
+      {
+           "sourceFieldName":"/document/normalized_images/*/recognizedPeople/*",
+           "targetFieldName":"people",
+           "mappingFunction":null
+      },
+      {
+           "sourceFieldName":"/document/imageLocation",
+           "targetFieldName":"location",
+           "mappingFunction":null
+      },
+      {
+           "sourceFieldName":"/document/imageTakenAt",
+           "targetFieldName":"taken_at",
+           "mappingFunction":null
+      }
+   ]
+}

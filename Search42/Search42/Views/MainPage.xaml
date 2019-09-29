@@ -1,0 +1,365 @@
+﻿<Page
+    x:Class="Search42.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Search42.Helpers"
+    xmlns:localBehavoirs="using:Search42.Behaviors"
+    xmlns:maps="using:Windows.UI.Xaml.Controls.Maps"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Search42.Core.Models"
+    DataContext="{Binding Source={StaticResource Locator}, Path=MainViewModel}"
+    Style="{StaticResource PageStyle}"
+    mc:Ignorable="d">
+
+    <Grid x:Name="ContentArea">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            x:Uid="Main_Title"
+            Grid.Row="0"
+            Margin="10,0,0,0"
+            Style="{StaticResource PageTitleStyle}" />
+
+        <Grid Grid.Row="1" Background="{ThemeResource SystemControlPageBackgroundChromeLowBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="8*" />
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" MinWidth="300" />
+                <ColumnDefinition Width="7*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid
+                Grid.Row="0"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Margin="5,5,5,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <AutoSuggestBox
+                    ItemsSource="{x:Bind ViewModel.Suggestions, Mode=OneWay}"
+                    PlaceholderText="Search for someone..."
+                    QueryIcon="Find"
+                    Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <Interactivity:Interaction.Behaviors>
+                        <Interactions:EventTriggerBehavior EventName="QuerySubmitted">
+                            <Interactions:InvokeCommandAction
+                                Command="{x:Bind ViewModel.SearchCommand}"
+                                InputConverter="{StaticResource EventArgsConverter}"
+                                InputConverterParameter="QueryText" />
+                        </Interactions:EventTriggerBehavior>
+                        <Interactions:EventTriggerBehavior EventName="TextChanged">
+                            <Interactions:InvokeCommandAction Command="{x:Bind ViewModel.TextChangedCommand}" InputConverter="{StaticResource AutoSuggestionBoxTextChangeReasonToBooleanConverter}" />
+                        </Interactions:EventTriggerBehavior>
+                    </Interactivity:Interaction.Behaviors>
+                </AutoSuggestBox>
+
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="30,0,0,0"
+                    Orientation="Horizontal">
+                    <CheckBox
+                        x:Name="FromDateCheckBox"
+                        Margin="0,0,-50,0"
+                        Content="From"
+                        IsChecked="{x:Bind ViewModel.IsDateFromEnabled, Mode=TwoWay}" />
+                    <CalendarDatePicker
+                        x:Name="DateFromPicker"
+                        Width="150"
+                        Date="{x:Bind ViewModel.DateFrom, Mode=TwoWay}"
+                        DateFormat="{}‎{day.integer}‎ {month.abbreviated} ‎{year.full}"
+                        IsEnabled="{Binding IsChecked, ElementName=FromDateCheckBox}"
+                        IsTodayHighlighted="True"
+                        MaxDate="{Binding Date, ElementName=DateToPicker}" />
+                    <CheckBox
+                        x:Name="ToDateCheckBox"
+                        Margin="40,0,-70,0"
+                        Content="To"
+                        IsChecked="{x:Bind ViewModel.IsDateToEnabled, Mode=TwoWay}" />
+                    <CalendarDatePicker
+                        x:Name="DateToPicker"
+                        Width="150"
+                        Date="{x:Bind ViewModel.DateTo, Mode=TwoWay}"
+                        DateFormat="{}‎{day.integer}‎ {month.abbreviated} ‎{year.full}"
+                        IsEnabled="{Binding IsChecked, ElementName=ToDateCheckBox}"
+                        IsTodayHighlighted="True"
+                        MinDate="{Binding Date, ElementName=DateFromPicker}" />
+                </StackPanel>
+            </Grid>
+
+            <ListView
+                Grid.Row="1"
+                Grid.Column="0"
+                Margin="0,0,10,0"
+                VerticalAlignment="Top"
+                IsItemClickEnabled="True"
+                ItemsSource="{x:Bind ViewModel.SearchResultItems, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedItem, Mode=TwoWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:CognitiveSearchResult">
+                        <Grid Margin="0,10,0,20" ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <controls:ImageEx
+                                Width="80"
+                                Height="80"
+                                VerticalAlignment="Top"
+                                PlaceholderSource="/Assets/loading.gif"
+                                Source="{x:Bind Uri}"
+                                Stretch="UniformToFill" />
+
+                            <Grid
+                                Grid.Column="1"
+                                ColumnSpacing="10"
+                                RowSpacing="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <SymbolIcon
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    Symbol="Calendar" />
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Style="{StaticResource ListViewTextBlock}"
+                                    Text="{x:Bind TakenAt, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:dd MMM yyy HH:mm}'}" />
+
+                                <SymbolIcon
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Top"
+                                    Symbol="People" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Style="{StaticResource ListViewTextBlock}"
+                                    Text="{x:Bind People, Converter={StaticResource StringArrayToStringConverter}}" />
+
+                                <SymbolIcon
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Top"
+                                    Symbol="Map" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Style="{StaticResource ListViewTextBlock}"
+                                    Text="{x:Bind Location.Address.FreeformAddress}" />
+                            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+
+                <Interactivity:Interaction.Behaviors>
+                    <Interactions:EventTriggerBehavior EventName="ItemClick">
+                        <Interactions:InvokeCommandAction
+                            Command="{x:Bind ViewModel.ItemSelectedCommand}"
+                            InputConverter="{StaticResource EventArgsConverter}"
+                            InputConverterParameter="ClickedItem" />
+                    </Interactions:EventTriggerBehavior>
+                    <localBehavoirs:ScrollSelectedItemIntoViewBehavior />
+                </Interactivity:Interaction.Behaviors>
+            </ListView>
+
+            <Border
+                Grid.Row="1"
+                Grid.Column="0"
+                VerticalAlignment="Bottom"
+                BorderBrush="Gray"
+                BorderThickness="1" />
+
+            <ListView
+                Grid.Row="2"
+                Grid.RowSpan="2"
+                Grid.Column="0"
+                Margin="0,0,10,0"
+                ItemsSource="{x:Bind ViewModel.Facets, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedFacet, Mode=TwoWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Facet">
+                        <TextBlock VerticalAlignment="Top" Style="{StaticResource ListViewTextBlock}">
+                            <Run Text="{x:Bind Key}" />
+                            <Run
+                                FontSize="18"
+                                Foreground="DarkGray"
+                                Text="{x:Bind Count}" />
+                        </TextBlock>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <maps:MapControl
+                x:Name="map"
+                Grid.Row="1"
+                Grid.RowSpan="2"
+                Grid.Column="1"
+                Center="{x:Bind ViewModel.MapCenter, Mode=OneWay, Converter={StaticResource PositionToGeopointConverter}}"
+                Layers="{x:Bind ViewModel.SearchResultItems, Mode=OneWay, Converter={StaticResource SearchResultToMapLayerConverter}}"
+                Loaded="MapControl_Loaded"
+                ZoomLevel="{x:Bind ViewModel.ZoomLevel, Mode=TwoWay}">
+
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout
+                        helpers:FlyoutHelper.IsVisible="{x:Bind ViewModel.IsPopupOpen, Mode=TwoWay}"
+                        helpers:FlyoutHelper.Parent="{Binding ElementName=map}"
+                        AreOpenCloseAnimationsEnabled="True"
+                        FlyoutPresenterStyle="{StaticResource FlyoutPresenterStyle}"
+                        Placement="Full">
+                        <Grid
+                            Width="760"
+                            ColumnSpacing="10"
+                            RowSpacing="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
+                                Style="{StaticResource PageTitleStyle}"
+                                Text="{x:Bind ViewModel.SelectedItem.People, Mode=OneWay, Converter={StaticResource StringArrayToStringConverter}}" />
+
+                            <controls:ImageEx
+                                Grid.Row="1"
+                                MaxWidth="400"
+                                VerticalAlignment="Top"
+                                PlaceholderSource="/Assets/loading.gif"
+                                Source="{x:Bind ViewModel.SelectedItem.Uri, Mode=OneWay}"
+                                Stretch="UniformToFill" />
+
+                            <Grid
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                ColumnSpacing="10"
+                                RowSpacing="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <SymbolIcon
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    Symbol="Calendar" />
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Style="{StaticResource ListViewTextBlock}"
+                                    Text="{x:Bind ViewModel.SelectedItem.TakenAt, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:dd MMMM yyy HH:mm}'}" />
+
+                                <SymbolIcon
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Top"
+                                    Symbol="Map" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Style="{StaticResource ListViewTextBlock}"
+                                    Text="{x:Bind ViewModel.SelectedItem.Location.Address.FreeformAddress, Mode=OneWay}" />
+                            </Grid>
+                        </Grid>
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+
+                <Interactivity:Interaction.Behaviors>
+                    <Interactions:EventTriggerBehavior EventName="MapElementClick">
+                        <Interactions:InvokeCommandAction Command="{x:Bind ViewModel.MapItemSelectedCommand}" InputConverter="{StaticResource MapElementActionToItemConverter}" />
+                    </Interactions:EventTriggerBehavior>
+                    <Interactions:EventTriggerBehavior EventName="MapElementPointerEntered">
+                        <Interactions:InvokeCommandAction Command="{x:Bind ViewModel.MapItemEnteredCommand}" InputConverter="{StaticResource MapElementActionToItemConverter}" />
+                    </Interactions:EventTriggerBehavior>
+                    <localBehavoirs:MapBoundingBoxBehavior ItemsSource="{x:Bind ViewModel.SearchResultItems, Mode=OneWay}" />
+                </Interactivity:Interaction.Behaviors>
+            </maps:MapControl>
+
+            <Grid
+                Grid.Row="3"
+                Grid.Column="1"
+                Margin="20,10,0,10"
+                HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="{x:Bind ViewModel.SearchResult.Count, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0} Results found', Mode=OneWay}" />
+                <ComboBox
+                    Name="mapStyleComboBox"
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="0,0,10,0"
+                    Header="Map style"
+                    SelectionChanged="mapStyleComboBox_SelectionChanged">
+                    <ComboBox.Items>
+                        <ComboBoxItem IsSelected="True">Road</ComboBoxItem>
+                        <ComboBoxItem>Aerial</ComboBoxItem>
+                        <ComboBoxItem>Aerial With Roads</ComboBoxItem>
+                    </ComboBox.Items>
+                </ComboBox>
+            </Grid>
+
+            <!--  Column Grid Splitter  -->
+            <controls:GridSplitter
+                Grid.Row="1"
+                Grid.RowSpan="3"
+                Grid.Column="1"
+                Width="16"
+                HorizontalAlignment="Left"
+                CursorBehavior="ChangeOnSplitterHover"
+                GripperCursor="Default"
+                ResizeBehavior="BasedOnAlignment"
+                ResizeDirection="Auto">
+                <controls:GridSplitter.RenderTransform>
+                    <TranslateTransform X="-8" />
+                </controls:GridSplitter.RenderTransform>
+            </controls:GridSplitter>
+        </Grid>
+
+        <ProgressRing
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Grid.Column="1"
+            Grid.ColumnSpan="2"
+            Width="100"
+            Height="100"
+            IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+    </Grid>
+</Page>

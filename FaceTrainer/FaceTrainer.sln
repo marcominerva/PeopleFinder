@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28917.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaceTrainer", "FaceTrainer\FaceTrainer.csproj", "{0604ABBE-851D-42C3-BEE5-C4CA87C74FF1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0604ABBE-851D-42C3-BEE5-C4CA87C74FF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0604ABBE-851D-42C3-BEE5-C4CA87C74FF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0604ABBE-851D-42C3-BEE5-C4CA87C74FF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0604ABBE-851D-42C3-BEE5-C4CA87C74FF1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6C9D7A60-531B-490C-BE8B-F7AD3A547FA5}
+	EndGlobalSection
+EndGlobal

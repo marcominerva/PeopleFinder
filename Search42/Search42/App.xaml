@@ -1,0 +1,30 @@
+﻿<Application
+    x:Class="Search42.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:localConverters="using:Search42.Converters">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <vm:ViewModelLocator xmlns:vm="using:Search42.ViewModels" x:Key="Locator" />
+
+            <converters:StringFormatConverter x:Key="StringFormatConverter" />
+            <localConverters:EventArgsConverter x:Key="EventArgsConverter" />
+            <localConverters:StringArrayToStringConverter x:Key="StringArrayToStringConverter" />
+            <localConverters:SearchResultToMapLayerConverter x:Key="SearchResultToMapLayerConverter" />
+            <localConverters:MapElementActionToItemConverter x:Key="MapElementActionToItemConverter" />
+            <localConverters:PositionToGeopointConverter x:Key="PositionToGeopointConverter" />
+            <localConverters:AutoSuggestionBoxTextChangeReasonToBooleanConverter x:Key="AutoSuggestionBoxTextChangeReasonToBooleanConverter" />
+
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/_Colors.xaml" />
+                <ResourceDictionary Source="/Styles/_FontSizes.xaml" />
+                <ResourceDictionary Source="/Styles/_Thickness.xaml" />
+
+                <ResourceDictionary Source="/Styles/Controls.xaml" />
+                <ResourceDictionary Source="/Styles/Page.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

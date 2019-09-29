@@ -1,0 +1,60 @@
+PUT https://<service_name>.search.windows.net/skillsets/<skillset_name>?api-version=2019-05-06
+
+Content-Type: application/json
+api-key: <api_key>
+
+{
+   "name":"<skillset_name>",
+   "description":"basic skillset",
+   "skills":[
+      {
+        "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
+        "name":"#1",
+        "description": "Face Recognition Custom Skill",
+        "uri": "<custom_skill_url>/api/Face",
+        "batchSize":1,
+        "context": "/document/normalized_images/*",
+        "inputs": [
+          {
+            "name": "image",
+            "source": "/document/normalized_images/*"
+          },
+          {
+            "name": "uri",
+            "source": "/document/uri"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "people",
+            "targetName": "recognizedPeople"
+          }
+        ]
+      },
+      {
+        "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
+        "name":"#2",
+        "description": "Exif Information Custom Skill",
+        "uri": "<custom_skill_url>/api/exif",
+        "batchSize":1,
+        "context": "/document",
+        "inputs": [
+          {
+            "name": "uri",
+            "source": "/document/uri"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "location",
+            "targetName": "imageLocation"
+          },
+         {
+            "name": "takenAt",
+            "targetName": "imageTakenAt"
+          }
+        ]
+      }
+   ],
+   "cognitiveServices":null
+}
