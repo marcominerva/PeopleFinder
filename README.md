@@ -6,7 +6,7 @@ This demo requires [Azure Search](https://azure.microsoft.com/en-us/services/sea
 
 **Getting started**
 
-1. Create an Azure Search Index using the **Import data** wizard, attached to a Blob Storage that contains the photos we want to analyze. As we deal with images, in the **Add enrichments** section of the *Add cognitive search (optional)* step, be sure to select the **Enable OCR and merge all text into merd_content field** checkbox. At this time, we don't need to select any of the custom skills available, as we'll configure ours later. Then, in the *Customize target index* step, deselect all the checkboxes, because we'll add our custom fields to the index.
+1. Create an Azure Search Index using the **Import data** wizard, attached to a Blob Storage that contains the photos we want to analyze. As we deal with images, in the **Add enrichments** section of the *Add cognitive search (optional)* step, be sure to select the **Enable OCR and merge all text into merge_content field** checkbox. At this time, we don't need to select any of the custom skills available, as we'll configure ours later. Then, in the *Customize target index* step, deselect all the checkboxes, because we'll add our custom fields to the index.
 
 2. After completing the wizard, you can use the [Index Creation Script](Setup/Index.txt) to include all the required fields. Be sure to replace the *<service_name>*, *<index_name>* and *<api_key>* placeholders with your values. The Index shold be like the following:
 
