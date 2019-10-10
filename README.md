@@ -6,13 +6,13 @@ This demo requires [Azure Search](https://azure.microsoft.com/en-us/services/sea
 
 **Getting started**
 
-1. Create an Azure Search Index using the **Import data** wizard, attached to a Blob Storage that contains the photos we want to analyze. As we deal with images, in the **Add enrichments** section of the *Add cognitive search (optional)* step, be sure to select the **Enable OCR and merge all text into merd_content field** checkbox. At this time, we don't need to select any of the custom skills available, as we'll configure ours later. Then, in the *Customize target index* step, deselect all the checkboxes, because we'll add our custom fields to the index.
+1. Create an Azure Search Index using the **Import data** wizard, attached to a Blob Storage that contains the photos we want to analyze. As we deal with images, in the **Add enrichments** section of the *Add cognitive search (optional)* step, be sure to select the **Enable OCR and merge all text into merge_content field** checkbox. At this time, we don't need to select any of the custom skills available, as we'll configure ours later. Then, in the *Customize target index* step, deselect all the checkboxes, because we'll add our custom fields to the index.
 
 2. After completing the wizard, you can use the [Index Creation Script](Setup/Index.txt) to include all the required fields. Be sure to replace the *<service_name>*, *<index_name>* and *<api_key>* placeholders with your values. The Index shold be like the following:
 
     ![Index Configuration](Setup/IndexConfiguration.png)
 
-3. Create the Skillset for the Index, using the [Skillset Creation Script](Setup/Index.txt). Be sure to replaced the *<service_name>*, *<skillset_name>* and *<custom_skill_url>* with your values. The latter can be an Azure Funtioncs in which you have deplyoed the [FaceSkill](FaceSkill/) project.
+3. Create the Skillset for the Index, using the [Skillset Creation Script](Setup/Skillset.txt). Be sure to replaced the *<service_name>*, *<skillset_name>* and *<custom_skill_url>* with your values. The latter can be an Azure Funtioncs in which you have deplyoed the [FaceSkill](FaceSkill/) project.
 
 4. Create the Indexer for the Index, using [Indexer Creation Script](Setup/Indexer.txt). Be sure to replace the *<service_name>*, *<indexer_name>*, *<api_key>*, *<datasource_name>*, *<skillset_name>* and *<index_name>* with your values.
 
@@ -74,4 +74,4 @@ The project is continuously evolving. We welcome contributions. Feel free to fil
 
 The image, voice, video or text understanding capabilities of Azure Cognitive Search use Microsoft Cognitive Services. Microsoft will receive the images, audio, video, and other data that you upload (via this app) for service improvement purposes. To report abuse of the Microsoft Cognitive Services to Microsoft, please visit the Microsoft Cognitive Services website at https://www.microsoft.com/cognitive-services, and use the "Report Abuse" link at the bottom of the page to contact Microsoft. For more information about Microsoft privacy policies please see their privacy statement here: https://go.microsoft.com/fwlink/?LinkId=521839.
 
-People Finder uses the Microsoft Cognitive Services, see https://www.microsoft.com/cognitive-services. Developers using this project are expected to follow the ìDeveloper Code of Conduct for Microsoft Cognitive Servicesî at http://go.microsoft.com/fwlink/?LinkId=698895. 
+People Finder uses the Microsoft Cognitive Services, see https://www.microsoft.com/cognitive-services. Developers using this project are expected to follow the ‚ÄúDeveloper Code of Conduct for Microsoft Cognitive Services‚Äù at http://go.microsoft.com/fwlink/?LinkId=698895. 
