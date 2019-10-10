@@ -32,13 +32,13 @@ namespace Search42.Core.Services
 
         public async Task<IEnumerable<string>> GetSuggestionsAsync(string searchText, string suggesterName)
         {
-            var sp = new SuggestParameters()
+            var suggestParameters = new SuggestParameters()
             {
                 UseFuzzyMatching = true,
                 Top = 100
             };
 
-            var response = await index.Documents.SuggestAsync(searchText, suggesterName, sp);
+            var response = await index.Documents.SuggestAsync(searchText, suggesterName, suggestParameters);
 
             var suggestions = response.Results.Select(x => x.Text).Distinct().OrderBy(s => s);
             return suggestions;
