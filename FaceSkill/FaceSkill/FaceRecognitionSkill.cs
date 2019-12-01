@@ -76,19 +76,22 @@ namespace FaceSkill
                     if (faces.Any())
                     {
                         var personGroups = await faceClient.PersonGroup.ListAsync();
-                        var identifyPersonGroupId = (personGroups.FirstOrDefault(p => p.Name.ToLower() == "default" || p.UserData.ToLower() == "default") ?? personGroups.FirstOrDefault())?.PersonGroupId;
+                        var identifyPersonGroupId = (personGroups?.FirstOrDefault(p => p.Name.ToLower() == "default" || p.UserData.ToLower() == "default") ?? personGroups?.FirstOrDefault())?.PersonGroupId;
 
-                        var faceIds = faces.Select(face => face.FaceId.Value).ToList();
-                        var faceIdentificationResult = await faceClient.Face.IdentifyAsync(faceIds, identifyPersonGroupId);
-
-                        foreach (var face in faces)
+                        if (identifyPersonGroupId != null)
                         {
-                            var candidate = faceIdentificationResult?.FirstOrDefault(r => r.FaceId == face.FaceId)?.Candidates.FirstOrDefault();
-                            if (candidate != null)
+                            var faceIds = faces.Select(face => face.FaceId.Value).ToList();
+                            var faceIdentificationResult = await faceClient.Face.IdentifyAsync(faceIds, identifyPersonGroupId);
+
+                            foreach (var face in faces)
                             {
-                                // Gets the person name.
-                                var person = await faceClient.PersonGroupPerson.GetAsync(identifyPersonGroupId, candidate.PersonId);
-                                people.Add(person.Name);
+                                var candidate = faceIdentificationResult?.FirstOrDefault(r => r.FaceId == face.FaceId)?.Candidates.FirstOrDefault();
+                                if (candidate != null)
+                                {
+                                    // Gets the person name.
+                                    var person = await faceClient.PersonGroupPerson.GetAsync(identifyPersonGroupId, candidate.PersonId);
+                                    people.Add(person.Name);
+                                }
                             }
                         }
                     }
