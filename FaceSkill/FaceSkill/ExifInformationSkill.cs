@@ -1,3 +1,4 @@
+using FaceSkill.Models;
 using FaceSkill.Models.DataTypes;
 using FaceSkill.Models.Response;
 using ImageMagick;
@@ -5,8 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -18,10 +19,19 @@ using System.Threading.Tasks;
 
 namespace FaceSkill
 {
-    public static class ExifInformationSkill
+    public class ExifInformationSkill
     {
+        private readonly HttpClient httpClient;
+        private readonly AppSettings settings;
+
+        public ExifInformationSkill(IHttpClientFactory httpClientFactory, IOptions<AppSettings> appSettings)
+        {
+            httpClient = httpClientFactory.CreateClient();
+            settings = appSettings.Value;
+        }
+
         [FunctionName("exif")]
-        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log, ExecutionContext context)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log, ExecutionContext context)
         {
             using (var inputStream = new StreamReader(req.Body))
             {
@@ -46,12 +56,6 @@ namespace FaceSkill
                     return new BadRequestObjectResult("recordId cannot be null");
                 }
 
-                var config = new ConfigurationBuilder()
-                                    .SetBasePath(context.FunctionAppDirectory)
-                                    .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                                    .AddEnvironmentVariables()
-                                    .Build();
-
                 // Creates the response.
                 var responseRecord = new WebApiResponseRecord(recordId);
                 var response = new WebApiEnricherResponse(responseRecord);
@@ -60,9 +64,8 @@ namespace FaceSkill
                 DateTime? takenAt = null;
                 Address address = null;
 
-                var client = new HttpClient();
                 var uri = data["values"].First()["data"]?["uri"]?.ToString();
-                var imageContent = await client.GetByteArrayAsync(uri);
+                var imageContent = await httpClient.GetByteArrayAsync(uri);
 
                 using (var image = new MagickImage(imageContent, 0, imageContent.Length))
                 {
@@ -78,7 +81,7 @@ namespace FaceSkill
                     longitude = ToDecimalDegrees(exifLongitude, exifLongitudeRef == "E" ? 1 : -1);
 
                     // Perform a reverse geocoding of the address.
-                    address = await GetAddressAsync(config, client, latitude, longitude);
+                    address = await GetAddressAsync(latitude, longitude);
 
                     var takenAtRef = (profile?.Values.FirstOrDefault(v => v.Tag == ExifTag.DateTime) ?? profile.Values.FirstOrDefault(v => v.Tag == ExifTag.DateTimeOriginal))?.Value as string;
                     if (!string.IsNullOrWhiteSpace(takenAtRef) && DateTime.TryParseExact(takenAtRef, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
@@ -99,24 +102,11 @@ namespace FaceSkill
             }
         }
 
-        private static double? ToDecimalDegrees(Rational[] number, int sign)
-        {
-            double? result = null;
-
-            if (number?.Length == 3)
-            {
-                result = Math.Round(number[0].Numerator + (double)number[1].Numerator /
-                    (60 * number[1].Denominator) + (double)number[2].Numerator / (3600 * number[2].Denominator), 6) * sign;
-            }
-            return result;
-        }
-
-        private static async Task<Address> GetAddressAsync(IConfiguration config, HttpClient client, double? latitude, double? longitude)
+        private async Task<Address> GetAddressAsync(double? latitude, double? longitude)
         {
             if (latitude.HasValue && longitude.HasValue)
             {
-                var subscriptionKey = config.GetValue<string>("AppSettings:MapsSubscriptionKey");
-                var reverseGeocodingResponse = await client.GetAsync($"https://atlas.microsoft.com/search/address/reverse/json?language=en-US&subscription-key={subscriptionKey}&api-version=1.0&query={latitude.ToString().Replace(",", ".")},{longitude.ToString().Replace(",", ".")}");
+                var reverseGeocodingResponse = await httpClient.GetAsync($"https://atlas.microsoft.com/search/address/reverse/json?language=en-US&subscription-key={settings.MapsSubscriptionKey}&api-version=1.0&query={latitude.ToString().Replace(",", ".")},{longitude.ToString().Replace(",", ".")}");
                 if (reverseGeocodingResponse.IsSuccessStatusCode)
                 {
                     var reverseGeocodingJson = await reverseGeocodingResponse.Content.ReadAsStringAsync();
@@ -128,6 +118,19 @@ namespace FaceSkill
             }
 
             return null;
+        }
+
+        private static double? ToDecimalDegrees(Rational[] number, int sign)
+        {
+            double? result = null;
+
+            if (number?.Length == 3)
+            {
+                result = Math.Round(number[0].Numerator + (double)number[1].Numerator /
+                    (60 * number[1].Denominator) + (double)number[2].Numerator / (3600 * number[2].Denominator), 6) * sign;
+            }
+
+            return result;
         }
     }
 }

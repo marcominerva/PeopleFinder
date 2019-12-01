@@ -1,23 +1,34 @@
+using FaceSkill.Models;
 using FaceSkill.Models.Response;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.Face;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace FaceSkill
 {
-    public static class FaceRecognitionSkill
+    public class FaceRecognitionSkill
     {
+        private readonly HttpClient httpClient;
+        private readonly AppSettings settings;
+
+        public FaceRecognitionSkill(IHttpClientFactory httpClientFactory, IOptions<AppSettings> appSettings)
+        {
+            httpClient = httpClientFactory.CreateClient();
+            settings = appSettings.Value;
+        }
+
         [FunctionName("Face")]
-        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log, ExecutionContext context)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log, ExecutionContext context)
         {
             using (var inputStream = new StreamReader(req.Body))
             {
@@ -48,24 +59,15 @@ namespace FaceSkill
                     return new BadRequestObjectResult("image data cannot be null");
                 }
 
-                var config = new ConfigurationBuilder()
-                                    .SetBasePath(context.FunctionAppDirectory)
-                                    .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                                    .AddEnvironmentVariables()
-                                    .Build();
-
                 // Creates the response.
                 var responseRecord = new WebApiResponseRecord(recordId);
                 var response = new WebApiEnricherResponse(responseRecord);
 
                 var people = new List<string>();
 
-                var subscriptionKey = config.GetValue<string>("AppSettings:FaceSubscriptionKey");
-                var endpoint = $"https://{config.GetValue<string>("AppSettings:Region")}.api.cognitive.microsoft.com";
-
-                var faceClient = new FaceClient(new ApiKeyServiceClientCredentials(subscriptionKey))
+                var faceClient = new FaceClient(new ApiKeyServiceClientCredentials(settings.FaceSubscriptionKey), httpClient, false)
                 {
-                    Endpoint = endpoint
+                    Endpoint = $"https://{settings.Region}.api.cognitive.microsoft.com"
                 };
 
                 var buffer = System.Convert.FromBase64String(base64image);
