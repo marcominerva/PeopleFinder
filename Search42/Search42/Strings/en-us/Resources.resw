@@ -142,15 +142,7 @@
     <comment>The page is unknown or not registered in navigation service</comment>
   </data>
   <data name="Main_Title.Text" xml:space="preserve">
-    <value>Search42 - You can run but you can hide</value>
+    <value>Search42 - You can run but you can't hide</value>
     <comment>Page title for MainPage</comment>
-  </data>
-  <data name="Map_YourLocation" xml:space="preserve">
-    <value>Your location</value>
-    <comment>Your location text on map page</comment>
-  </data>
-  <data name="ExceptionLocationServiceStartListeningCanNotBeCalled" xml:space="preserve">
-    <value>The StartListening method cannot be called before the InitializeAsync method.</value>
-    <comment>Start listening cannot be called before the initialize in location service</comment>
   </data>
 </root>
