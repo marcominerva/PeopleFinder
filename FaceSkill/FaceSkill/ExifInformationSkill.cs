@@ -33,73 +33,70 @@ namespace FaceSkill
         [FunctionName("exif")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log, ExecutionContext context)
         {
-            using (var inputStream = new StreamReader(req.Body))
+            using var inputStream = new StreamReader(req.Body);
+            var requestBody = await inputStream.ReadToEndAsync();
+            var data = JToken.Parse(requestBody);
+
+            // Validation
+            if (data == null)
             {
-                var requestBody = await inputStream.ReadToEndAsync();
-                var data = JToken.Parse(requestBody);
-
-                // Validation
-                if (data == null)
-                {
-                    return new BadRequestObjectResult(" Could not find values array");
-                }
-
-                if (data["values"]?.FirstOrDefault() == null)
-                {
-                    // It could not find a record, then return empty values array.
-                    return new BadRequestObjectResult(" Could not find valid records in values array");
-                }
-
-                var recordId = data["values"].First()["recordId"]?.ToString();
-                if (recordId == null)
-                {
-                    return new BadRequestObjectResult("recordId cannot be null");
-                }
-
-                // Creates the response.
-                var responseRecord = new WebApiResponseRecord(recordId);
-                var response = new WebApiEnricherResponse(responseRecord);
-
-                double? latitude = null, longitude = null;
-                DateTime? takenAt = null;
-                Address address = null;
-
-                var uri = data["values"].First()["data"]?["uri"]?.ToString();
-                var imageContent = await httpClient.GetByteArrayAsync(uri);
-
-                using (var image = new MagickImage(imageContent, 0, imageContent.Length))
-                {
-                    // Retrieve the exif information.
-                    var profile = image.GetExifProfile();
-
-                    var exifLatitude = profile?.Values.FirstOrDefault(v => v.Tag == ExifTag.GPSLatitude)?.Value as Rational[];
-                    var exifLatitudeRef = profile?.Values.FirstOrDefault(v => v.Tag == ExifTag.GPSLatitudeRef)?.Value as string ?? "N";
-                    var exifLongitude = profile?.Values.FirstOrDefault(v => v.Tag == ExifTag.GPSLongitude)?.Value as Rational[];
-                    var exifLongitudeRef = profile?.Values.FirstOrDefault(v => v.Tag == ExifTag.GPSLongitudeRef)?.Value as string ?? "E";
-
-                    latitude = ToDecimalDegrees(exifLatitude, exifLatitudeRef == "N" ? 1 : -1);
-                    longitude = ToDecimalDegrees(exifLongitude, exifLongitudeRef == "E" ? 1 : -1);
-
-                    // Perform a reverse geocoding of the address.
-                    address = await GetAddressAsync(latitude, longitude);
-
-                    var takenAtRef = (profile?.Values.FirstOrDefault(v => v.Tag == ExifTag.DateTime) ?? profile.Values.FirstOrDefault(v => v.Tag == ExifTag.DateTimeOriginal))?.Value as string;
-                    if (!string.IsNullOrWhiteSpace(takenAtRef) && DateTime.TryParseExact(takenAtRef, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
-                    {
-                        takenAt = result;
-                    }
-                }
-
-                responseRecord.Data.Add("location", new Location
-                {
-                    Position = EdmGeographyPoint.Create(latitude, longitude),
-                    Address = address
-                });
-
-                responseRecord.Data.Add("takenAt", takenAt);
-
-                return new OkObjectResult(response);
+                return new BadRequestObjectResult(" Could not find values array");
             }
+
+            if (data["values"]?.FirstOrDefault() == null)
+            {
+                // It could not find a record, then return empty values array.
+                return new BadRequestObjectResult(" Could not find valid records in values array");
+            }
+
+            var recordId = data["values"].First()["recordId"]?.ToString();
+            if (recordId == null)
+            {
+                return new BadRequestObjectResult("recordId cannot be null");
+            }
+
+            // Creates the response.
+            var responseRecord = new WebApiResponseRecord(recordId);
+            var response = new WebApiEnricherResponse(responseRecord);
+
+            double? latitude = null, longitude = null;
+            DateTime? takenAt = null;
+            Address address = null;
+
+            var uri = data["values"].First()["data"]?["uri"]?.ToString();
+            var imageContent = await httpClient.GetByteArrayAsync(uri);
+
+            using var image = new MagickImage(imageContent, 0, imageContent.Length);
+
+            // Retrieve the exif information.
+            var profile = image.GetExifProfile();
+
+            var exifLatitude = profile?.Values.FirstOrDefault(v => v.Tag == ExifTag.GPSLatitude).GetValue() as Rational[];
+            var exifLatitudeRef = profile?.Values.FirstOrDefault(v => v.Tag == ExifTag.GPSLatitudeRef).GetValue() as string ?? "N";
+            var exifLongitude = profile?.Values.FirstOrDefault(v => v.Tag == ExifTag.GPSLongitude).GetValue() as Rational[];
+            var exifLongitudeRef = profile?.Values.FirstOrDefault(v => v.Tag == ExifTag.GPSLongitudeRef).GetValue() as string ?? "E";
+
+            latitude = ToDecimalDegrees(exifLatitude, exifLatitudeRef == "N" ? 1 : -1);
+            longitude = ToDecimalDegrees(exifLongitude, exifLongitudeRef == "E" ? 1 : -1);
+
+            // Perform a reverse geocoding of the address.
+            address = await GetAddressAsync(latitude, longitude);
+
+            var takenAtRef = (profile?.Values.FirstOrDefault(v => v.Tag == ExifTag.DateTime) ?? profile.Values.FirstOrDefault(v => v.Tag == ExifTag.DateTimeOriginal)).GetValue() as string;
+            if (!string.IsNullOrWhiteSpace(takenAtRef) && DateTime.TryParseExact(takenAtRef, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
+            {
+                takenAt = result;
+            }
+
+            responseRecord.Data.Add("location", new Location
+            {
+                Position = EdmGeographyPoint.Create(latitude, longitude),
+                Address = address
+            });
+
+            responseRecord.Data.Add("takenAt", takenAt);
+
+            return new OkObjectResult(response);
         }
 
         private async Task<Address> GetAddressAsync(double? latitude, double? longitude)
