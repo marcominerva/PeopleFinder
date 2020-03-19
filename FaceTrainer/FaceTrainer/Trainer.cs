@@ -90,13 +90,11 @@ namespace FaceTrainer
                         Console.WriteLine($"Adding face \"{faceTag}\" to person \"{p.Name}\"...");
 
                         await policy.ExecuteAsync(async () =>
-                            {
-                                using (var stream = File.OpenRead(file))
-                                {
-                                    // Update person face on server side.
-                                    await faceClient.PersonGroupPerson.AddFaceFromStreamAsync(groupName, p.PersonId, stream, p.Name);
-                                }
-                            });
+                        {
+                            // Update person face on server side.
+                            using var stream = File.OpenRead(file);
+                            await faceClient.PersonGroupPerson.AddFaceFromStreamAsync(groupName, p.PersonId, stream, p.Name);
+                        });
                     }
                 }
 

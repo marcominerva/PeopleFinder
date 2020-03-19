@@ -209,7 +209,7 @@ namespace Search42.ViewModels
             IsBusy = true;
             SearchText = queryText;
 
-            var filters = $"taken_at ge {(isDateFromEnabled && dateFrom.HasValue ? dateFrom.Value : DateTimeOffset.MinValue).Date.ToString("yyyy-MM-dd")} and taken_at lt {(isDateToEnabled && DateTo.HasValue ? dateTo.Value.AddDays(1) : DateTimeOffset.MaxValue).Date.ToString("yyyy-MM-dd")}";
+            var filters = $"taken_at ge {(isDateFromEnabled && dateFrom.HasValue ? dateFrom.Value : DateTimeOffset.MinValue).Date:yyyy-MM-dd} and taken_at lt {(isDateToEnabled && DateTo.HasValue ? dateTo.Value.AddDays(1) : DateTimeOffset.MaxValue).Date:yyyy-MM-dd}";
             if (selectedFacet != null)
             {
                 filters += $" and location/address/Municipality eq '{selectedFacet.Key}'";
