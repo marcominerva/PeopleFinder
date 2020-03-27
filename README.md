@@ -1,6 +1,6 @@
 # People Finder
 
-A sample that shows how to enrich an Azure Search index using our artificial intelligence algorithms to create a visual search system in space and time. You can search for people, see their position on a map and filter the result based on dates and places.
+A sample that shows how to enrich an Azure Cognitive Search index using our artificial intelligence algorithms to create a visual search system through space and time. You can search for people, see their position on a map and filter the result based on dates and places.
 
 This demo requires [Azure Search](https://azure.microsoft.com/en-us/services/search), [Blob Storage](https://azure.microsoft.com/en-us/services/storage/blobs), [Cognitive Services](https://azure.microsoft.com/en-us/services/cognitive-services), [Azure Maps](https://azure.microsoft.com/en-us/services/azure-maps) services and [Azure Functions](https://azure.microsoft.com/en-us/services/functions) to deploy the custom skills. The client is built as a UWP app and you need a [Maps Authentication Key](https://docs.microsoft.com/en-us/windows/uwp/maps-and-location/authentication-key) (this is optional).
 
